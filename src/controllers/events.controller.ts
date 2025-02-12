@@ -121,12 +121,18 @@ eventsController.delete("/deleteEvent", async (req, res) => {
                 eventFound = true;
                 const eventData = eventDoc.data();
                 const imageUrl = eventData.image;
+                const mapsImageUrl = eventData.imageMapsLink;
                 console.log(`* [ Data ] Event data: ${JSON.stringify(eventData)}`);
 
                 if (imageUrl) {
                     const imageRef = ref(storage, imageUrl);
                     await deleteObject(imageRef);
                     console.log(`✅ [ Success ] Deleted image from storage: ${imageUrl}`);
+                }
+                if (mapsImageUrl) {
+                    const mapsImageRef = ref(storage, mapsImageUrl);
+                    await deleteObject(mapsImageRef);
+                    console.log(`✅ [ Success ] Deleted maps image from storage: ${mapsImageUrl}`);
                 }
 
                 const batch = writeBatch(firestore);
