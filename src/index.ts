@@ -11,7 +11,7 @@ const port: string = config.PORT|| "8080";
 app.use(express.json());
 app.set('json spaces', 2);
 // ------------------ Importation des modules ------------------
-const router = express.Router();
+express.Router();
 
 // ------------------ Routes ------------------
 app.get("/", (req, res) => {
