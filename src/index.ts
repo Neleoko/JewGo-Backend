@@ -3,7 +3,7 @@ import CategorieController from "./controllers/categorie.controller.ts";
 import config from "../environnements.config.ts"
 import EventsController from "./controllers/events.controller.ts";
 import UploadImageController from "./controllers/uploadImage.controller.ts";
-
+import OrganisationController from "./controllers/organisation.controller.ts";
 
 const app = express();
 const port: string = config.PORT|| "8080";
@@ -20,6 +20,7 @@ app.get("/", (req, res) => {
 
 app.use("/categorie", CategorieController);
 app.use("/event", EventsController);
+app.use("/organisation", OrganisationController);
 app.use("/upload", UploadImageController);
 
 app.listen(port, () => {

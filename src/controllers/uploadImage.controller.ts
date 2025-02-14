@@ -1,9 +1,9 @@
 import {deleteObject, getDownloadURL, getStorage, ref, uploadBytes} from "firebase/storage";
-import { Router, Request, Response } from "express";
+import {Request, Response, Router} from "express";
 import multer from "multer";
 
 const uploadImageController = Router();
-const upload = multer({ storage: multer.memoryStorage() }); // Multer en mémoire
+const upload = multer({storage: multer.memoryStorage()}); // Multer en mémoire
 const storage = getStorage();
 
 uploadImageController.get("/", (req: Request, res: Response): void => {
@@ -16,7 +16,7 @@ uploadImageController.post("/image", upload.single('image'), async (req: Request
         const file = req.file;
 
         if (!file) {
-            res.status(400).send({ error: "No file uploaded" });
+            res.status(400).send({error: "No file uploaded"});
             return;
         }
 
@@ -37,10 +37,10 @@ uploadImageController.post("/image", upload.single('image'), async (req: Request
         console.log("URL de l'image téléchargée sur Firebase:", downloadURL);
 
         // Répondre avec l'URL de l'image
-        res.status(200).send({ url: downloadURL });
+        res.status(200).send({url: downloadURL});
     } catch (error: any) {
         console.error('Erreur lors de l\'upload de l\'image :', error);
-        res.status(500).send({ error: error.message });
+        res.status(500).send({error: error.message});
     }
 });
 
@@ -50,12 +50,14 @@ uploadImageController.delete("/image", async (req: Request, res: Response): Prom
         const fileName = req.body.fileName;
         const imageRef = ref(storage, `${path}/${fileName}`);
         await deleteObject(imageRef);
-        res.status(200).send({ message: `Image ${fileName} supprimée avec succès` });
+        res.status(200).send({message: `Image ${fileName} supprimée avec succès`});
     } catch (error: any) {
         console.error('Erreur lors de la suppression de l\'image :', error);
-        res.status(500).send({ error: error.message });
+        res.status(500).send({error: error.message});
     }
 });
 
 
 export default uploadImageController;
+
+
