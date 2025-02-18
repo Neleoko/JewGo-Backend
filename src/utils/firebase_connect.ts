@@ -1,6 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { initializeAuth, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore } from "firebase/firestore";
+import {initializeApp} from "firebase/app";
+import {browserLocalPersistence, initializeAuth} from 'firebase/auth';
+import {getFirestore} from "firebase/firestore";
 import config from "../../environnements.config.ts"
 
 

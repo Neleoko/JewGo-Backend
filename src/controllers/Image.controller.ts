@@ -2,15 +2,15 @@ import {deleteObject, getDownloadURL, getStorage, ref, uploadBytes} from "fireba
 import {Request, Response, Router} from "express";
 import multer from "multer";
 
-const uploadImageController = Router();
+const imageController = Router();
 const upload = multer({storage: multer.memoryStorage()}); // Multer en mémoire
 const storage = getStorage();
 
-uploadImageController.get("/", (req: Request, res: Response): void => {
+imageController.get("/", (req: Request, res: Response): void => {
     res.send("🚀 Welcome to the image upload API!");
 });
 
-uploadImageController.post("/image", upload.single('image'), async (req: Request, res: Response): Promise<void> => {
+imageController.post("/image", upload.single('image'), async (req: Request, res: Response): Promise<void> => {
     try {
         const path = req.body.path;
         const file = req.file;
@@ -34,8 +34,6 @@ uploadImageController.post("/image", upload.single('image'), async (req: Request
 
         // Récupérer l'URL après un téléchargement réussi
         const downloadURL = await getDownloadURL(imageRef);
-        console.log("URL de l'image téléchargée sur Firebase:", downloadURL);
-
         // Répondre avec l'URL de l'image
         res.status(200).send({url: downloadURL});
     } catch (error: any) {
@@ -44,12 +42,13 @@ uploadImageController.post("/image", upload.single('image'), async (req: Request
     }
 });
 
-uploadImageController.delete("/image", async (req: Request, res: Response): Promise<void> => {
+imageController.delete("/image", async (req: Request, res: Response): Promise<void> => {
     try {
         const path = req.body.path;
         const fileName = req.body.fileName;
         const imageRef = ref(storage, `${path}/${fileName}`);
         await deleteObject(imageRef);
+        console.log(`Image ${fileName} supprimée avec succès`);
         res.status(200).send({message: `Image ${fileName} supprimée avec succès`});
     } catch (error: any) {
         console.error('Erreur lors de la suppression de l\'image :', error);
@@ -58,6 +57,6 @@ uploadImageController.delete("/image", async (req: Request, res: Response): Prom
 });
 
 
-export default uploadImageController;
+export default imageController;
 
 

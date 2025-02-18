@@ -156,7 +156,7 @@ eventsController.delete("/deleteEvent", async (req, res) => {
         }
     } catch (error: any) {
         console.error(`❌ [ Error ] Deleting event: ${error.message}`);
-        res.status(500).send({ error: error.message });
+        res.status(500).send({error: error.message});
     }
 });
 export default eventsController;

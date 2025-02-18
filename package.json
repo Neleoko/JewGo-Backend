@@ -12,6 +12,7 @@
   "dependencies": {
     "@firebase/firestore": "^4.7.8",
     "@react-native-async-storage/async-storage": "^1.24.0",
+    "axios": "^1.7.9",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase": "^11.2.0",
