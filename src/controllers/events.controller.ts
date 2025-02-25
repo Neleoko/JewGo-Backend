@@ -1,10 +1,8 @@
 import express, {Router} from "express";
 import {firestore} from "../utils/firebase_connect";
 import {addDoc, collection, doc, getDoc, getDocs, orderBy, query, where, writeBatch} from "firebase/firestore";
-import firebase from "firebase/compat";
 import {deleteObject, getStorage, ref} from 'firebase/storage';
-
-import DocumentData = firebase.firestore.DocumentData;
+import {DocumentData} from "firebase/firestore";
 
 const storage = getStorage();
 const eventsController = Router();
