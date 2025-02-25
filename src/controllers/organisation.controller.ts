@@ -12,6 +12,39 @@ organisationController.get("/", async (req, res) => {
     console.log(`* [ Connection ] Accessed Organisation Controller root`);
     res.send("Organisation Controller");
 });
+organisationController.get("/getAll", async (req, res) => {
+    console.log(`* [ Action ] Fetching all organisations`);
+    try {
+        const organisationsCollection = collection(firestore, "organisations");
+        const organisationsQuery = query(organisationsCollection);
+        const querySnapshot = await getDocs(organisationsQuery);
+        const organisations = querySnapshot.docs.map(doc => doc.data());
+        res.status(200).send(organisations);
+    } catch (e: any) {
+        res.status(500).send({error: e.message});
+    }
+})
+
+organisationController.get("/preview", async (req, res) => {
+    console.log(`* [ Action ] Fetching organisation previews`);
+    try {
+        const organisationsCollection = collection(firestore, "organisations");
+        const organisationsQuery = query(organisationsCollection, where("isCompleted", "==", true));
+        const querySnapshot = await getDocs(organisationsQuery);
+
+        // Ne récupérer que name, photoURL et id
+        const organisations = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            photoURL: doc.data().photoURL
+        }));
+        res.status(200).send(organisations);
+    } catch (e: any) {
+        res.status(500).send({error: e.message});
+    }
+});
+
+
 organisationController.get("/getByID", async (req, res) => {
     const organisationId = req.query.id as string;
     console.log(`* [ Action ] Fetching organisation with ID: ${organisationId}`);
@@ -67,13 +100,13 @@ organisationController.post("/create", async (req, res) => {
 })
 
 organisationController.patch("/update", async (req, res) => {
-    const { updateData, organisationId } = req.body;
+    const {updateData, organisationId} = req.body;
     try {
         const organisationRef = doc(firestore, "organisations", organisationId);
         const organisationDoc = await getDoc(organisationRef);
 
         if (!organisationDoc.exists()) {
-            res.status(404).send({ message: "Organisation not found" });
+            res.status(404).send({message: "Organisation not found"});
             return;
         }
         const existingData = organisationDoc.data();
@@ -93,6 +126,7 @@ organisationController.patch("/update", async (req, res) => {
             name: updateData.name,
             photoURL: updateData.photoURL,
             description: updateData.description,
+            adresse: updateData.adresse,
             ageMin: updateData.ageMin,
             ageMax: updateData.ageMax,
             imageMapsLink: updateData.imageMapsLink,
@@ -103,10 +137,10 @@ organisationController.patch("/update", async (req, res) => {
         }
         await updateDoc(organisationRef, data);
         console.log("Organisation updated with ID: ", organisationRef.id);
-        res.status(200).send({ message: "Organisation updated successfully" });
+        res.status(200).send({message: "Organisation updated successfully"});
     } catch (e) {
         console.error("Error updating organisation: ", e);
-        res.status(500).send({ error: "Error updating organisation." });
+        res.status(500).send({error: "Error updating organisation."});
     }
 });
 

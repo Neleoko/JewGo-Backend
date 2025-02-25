@@ -44,16 +44,14 @@ AuthController.post("/logout", async (req, res) => {
 
 AuthController.post("/register", async (req, res) => {
     try {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
         await createUserWithEmailAndPassword(firebaseAuth, email, password);
+
         console.log(`* [ Action ] User registration`);
-        if (res.status(200)) {
-            res.status(200).send("User registration");
-        } else {
-            res.status(404).send("User not found");
-        }
+        res.status(200).send("User registration");
     } catch (e: any) {
         console.error("Error registering user: ", e);
+        res.status(400).send({ error: e.message });
     }
 });
 
