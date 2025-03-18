@@ -1,6 +1,6 @@
 import express, {Router} from "express";
 import {firestore} from "../utils/firebase_connect";
-import {addDoc, collection, doc, getDoc, getDocs, orderBy, query, where, writeBatch} from "firebase/firestore";
+import {addDoc, collection, doc, getDoc, getDocs, orderBy, query, setDoc, where, writeBatch} from "firebase/firestore";
 import {deleteObject, getStorage, ref} from 'firebase/storage';
 import {DocumentData} from "firebase/firestore";
 
@@ -73,6 +73,47 @@ eventsController.get("/getEventByDateAndID", async (req, res) => {
     }
 });
 
+eventsController.get("/getEventsByOrganisation", async (req, res) => {
+    const organisationId = req.query.organisationId as string;
+    console.log(`* [ Action ] Fetching events for organisation with ID: ${organisationId}`);
+
+    try {
+        const dateEventsCollection = collection(firestore, "dateEvents");
+        const dateEventsQuery = query(dateEventsCollection, orderBy("date", 'desc'));
+        const dateEventsSnapshot = await getDocs(dateEventsQuery);
+
+        const eventsData = [];
+
+        // Boucle à travers les documents de dates d'événements
+        for (const dateDoc of dateEventsSnapshot.docs) {
+            const date = dateDoc.data().date;
+            const eventsCollection = collection(dateDoc.ref, "events");
+
+            // Modifie la requête des événements pour inclure un filtre sur l'organisation
+            const eventsQuery = query(eventsCollection, where("organisationID", "==", organisationId)); // Filtrage par organisationId
+            const eventsSnapshot = await getDocs(eventsQuery);
+            const events: DocumentData[] = [];
+            eventsSnapshot.forEach((eventDoc) => {
+                const eventData = eventDoc.data();
+                eventData.id = eventDoc.id; // Ajouter l'ID de l'événement aux données de l'événement
+                events.push(eventData);
+            });
+
+            // Si des événements existent pour cette date, les ajouter à la réponse
+            if (events.length > 0) {
+                eventsData.push({date: date, events: events});
+            }
+        }
+
+        res.status(200).send(eventsData);
+        console.log(`✅ [ Success ] Fetched events for organisation successfully`);
+    } catch (e: any) {
+        console.error(`❌ [ Error ] Fetching events for organisation: ${e.message}`);
+        res.status(500).send({error: e.message});
+    }
+});
+
+
 eventsController.post("/addEvent", async (req, res) => {
     const {date, event} = req.body;
     console.log(`* [ Action ] Adding event on date: ${date}`);
@@ -99,6 +140,31 @@ eventsController.post("/addEvent", async (req, res) => {
         res.status(500).send({error: e.message});
     }
 });
+
+eventsController.patch("/updateEvent", async (req, res) => {
+    const {date, id, event} = req.body;
+    console.log(`* [ Action ] Updating event with ID: ${id} on date: ${date}`);
+    try {
+        const dateEventsCollection = collection(firestore, "dateEvents");
+        const dateQuery = query(dateEventsCollection, where("date", "==", date));
+        const dateSnapshot = await getDocs(dateQuery);
+
+        if (!dateSnapshot.empty) {
+            const dateDoc = dateSnapshot.docs[0];
+            const eventsCollection = collection(dateDoc.ref, "events");
+            const eventDocRef = doc(eventsCollection, id);
+            await setDoc(eventDocRef, event, {merge: true});
+            console.log(`✅ [ Success ] Event updated successfully`);
+            res.status(200).send({message: "Event updated successfully!", date: date, id: id});
+        } else {
+            console.log(`❌ [ Not Found ] No such date`);
+            res.status(404).send("No such date!");
+        }
+    } catch (e: any) {
+        console.error(`❌ [ Error ] Updating event: ${e.message}`);
+        res.status(500).send({error: e.message});
+    }
+})
 
 eventsController.delete("/deleteEvent", async (req, res) => {
 

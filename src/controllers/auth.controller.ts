@@ -2,6 +2,7 @@ import {Router} from "express";
 import {createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword} from 'firebase/auth';
 import {firebaseAuth} from '../utils/firebase_connect';
 import { signOut } from 'firebase/auth';
+import getFirebaseErrorMessage from "../error/errorMessage.ts";
 
 
 const AuthController = Router();
@@ -12,9 +13,8 @@ AuthController.get("/", async (req, res) => {
 });
 
 AuthController.post("/login", async (req, res) => {
-
     try {
-        const {email, password} = req.body;
+        const { email, password } = req.body;
         const response = await signInWithEmailAndPassword(firebaseAuth, email, password);
         console.log(`* [ Action ] User login`);
 
@@ -23,11 +23,25 @@ AuthController.post("/login", async (req, res) => {
             res.status(200).send(response);
         } else {
             console.log("User not found");
-            res.status(404).send(response);
+            res.status(404).send({ error: "User not found" });
         }
     } catch (e: any) {
-        console.error("Error logging in user: ", e);
-        res.status(500).send({error: e.message});
+        const { message, statusCode } = getFirebaseErrorMessage(e.code);
+        console.error("Error logging in user: ", e.code);
+        res.status(statusCode).send(message);
+    }
+});
+
+AuthController.post("/register", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const response = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        console.log(`* [ Action ] User registration`);
+        res.status(200).send(response);
+    } catch (e: any) {
+        const { message, statusCode } = getFirebaseErrorMessage(e.code);
+        console.error("Error registering user: ", e.code);
+        res.status(statusCode).send(message);
     }
 });
 
@@ -37,22 +51,8 @@ AuthController.post("/logout", async (req, res) => {
         console.log(`* [ Action ] User logout`);
         res.status(200).send({ message: "User logged out successfully" });
     } catch (e: any) {
-        console.error("Error logging out user: ", e);
-        res.status(500).send({ error: e.message });
+        console.error("Error logging out user: ", e.code);
+        res.status(500).send({ error: e.code });
     }
 });
-
-AuthController.post("/register", async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        await createUserWithEmailAndPassword(firebaseAuth, email, password);
-
-        console.log(`* [ Action ] User registration`);
-        res.status(200).send("User registration");
-    } catch (e: any) {
-        console.error("Error registering user: ", e);
-        res.status(400).send({ error: e.message });
-    }
-});
-
 export default AuthController;
